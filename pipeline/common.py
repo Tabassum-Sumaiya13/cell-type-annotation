@@ -18,6 +18,13 @@ PIXEL_UM = {'CRC':0.3774, 'HubMap':0.3774, 'Keren':0.3906, 'UPMC':0.3774, 'fergu
 
 COHORTS = ['CRC', 'HubMap', 'Keren', 'UPMC', 'ferguson']
 
+# ferguson ships as ONE flat table (2026-08 re-export from the spicyWorkflow SingleCellExperiment):
+# geometry + morphology + 9-class cellType + all 36 markers, one row per cell, already in the
+# order the rest of the pipeline uses. `_counts` = raw intensity; a `_norm` twin exists but Step 2
+# does its own per-(image, marker) normalisation, so feeding it raw keeps ferguson comparable to
+# CRC/Keren instead of normalising twice.
+FERGUSON_CSV = os.path.join(DATASETS, "ferguson", "csv_export", "ferguson_cells_counts.csv")
+
 
 def load_geometry(cohort):
     """Return a standard dataframe:
@@ -78,16 +85,15 @@ def load_geometry(cohort):
         })
 
     elif cohort == 'ferguson':
-        loc = pd.read_csv(os.path.join(D, "ferguson", "cell_locations.csv"))
-        meta = pd.read_csv(os.path.join(D, "ferguson", "sample_metadata.csv"),
-                           usecols=['acquisition_id', 'patient_id'])
-        loc = loc.merge(meta, on='acquisition_id', how='left')
+        loc = pd.read_csv(FERGUSON_CSV,
+                          usecols=['imageID', 'patientID', 'x', 'y', 'area'])
         out = pd.DataFrame({
-            'image_id':   loc['acquisition_id'].astype(str),
-            'patient_id': 'ferg_p' + loc['patient_id'].astype('Int64').astype(str),
-            'x_px': loc['X'].astype('float64'),
-            'y_px': loc['Y'].astype('float64'),
-            'area_px2': np.nan,
+            'image_id':   loc['imageID'].astype(str),
+            'patient_id': 'ferg_p' + loc['patientID'].astype('Int64').astype(str),
+            'x_px': loc['x'].astype('float64'),
+            'y_px': loc['y'].astype('float64'),
+            # 2D segmentation area in pixels; PIXEL_UM['ferguson'] == 1.0 so um2 == px2
+            'area_px2': loc['area'].astype('float64'),
         })
     else:
         raise ValueError(cohort)
@@ -144,13 +150,9 @@ def load_expression(cohort):
         assert ex[list(ren)].notna().all(axis=1).all(), "UPMC expr join left NaNs"
         X = ex[list(ren)].rename(columns=ren)
 
-    elif cohort == 'ferguson':                 # join on (acquisition_id, cell_id)
-        loc = pd.read_csv(os.path.join(D, "ferguson", "cell_locations.csv"),
-                          usecols=['acquisition_id', 'cell_id'])
-        ex = pd.read_csv(os.path.join(D, "ferguson", "cell_expression.csv"),
-                         usecols=['acquisition_id', 'cell_id'] + list(ren))
-        ex = loc.merge(ex, on=['acquisition_id', 'cell_id'], how='left')
-        assert ex[list(ren)].notna().all(axis=1).all(), "ferguson expr join left NaNs"
+    elif cohort == 'ferguson':                 # single file -> same row order as geometry
+        ex = pd.read_csv(FERGUSON_CSV, usecols=list(ren))
+        assert ex[list(ren)].notna().all(axis=1).all(), "ferguson expr has NaNs"
         X = ex[list(ren)].rename(columns=ren)
     else:
         raise ValueError(cohort)

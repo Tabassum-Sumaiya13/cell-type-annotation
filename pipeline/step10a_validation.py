@@ -47,8 +47,8 @@ def within_cohort():
         F = load(c)
         g = F[F.L2.values != ''].reset_index(drop=True)          # need resolved L2 to stratify
         if g.L2.nunique() < 2:
-            print(f"[within {c:8s}] only {g.L2.nunique()} L2 class -> skip (ferguson is L1-only)", flush=True)
-            rows.append({'cohort': c, 'scheme': 'within-strat-5fold', 'note': 'L1-only, skipped'})
+            print(f"[within {c:8s}] only {g.L2.nunique()} L2 class -> skip (needs >=2 to stratify)", flush=True)
+            rows.append({'cohort': c, 'scheme': 'within-strat-5fold', 'note': 'skipped: <2 L2 classes'})
             continue
         # patient-grouped feasibility
         n_pat = g.patient_id.nunique()

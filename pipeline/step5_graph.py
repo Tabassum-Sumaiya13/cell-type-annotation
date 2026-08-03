@@ -13,7 +13,7 @@ later step can prune / weight without rebuilding.
 Why radius primary, kNN secondary, not Delaunay: see PIPELINE / chat evidence. Delaunay is
 available as an opt-in variant (--delaunay) pruned at 30 um.
 """
-import numpy as np, pandas as pd, os, sys, time
+import numpy as np, pandas as pd, os, time
 from scipy.spatial import cKDTree
 from common import COHORTS, OUT, AUDIT
 

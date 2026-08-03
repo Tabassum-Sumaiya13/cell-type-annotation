@@ -10,7 +10,7 @@ Answers report items:
 
 Output: harmonised/model/step10b_graph.csv, step10b_models.csv + _audit/step10b_report.md
 """
-import numpy as np, pandas as pd, os, json, time
+import numpy as np, pandas as pd, os, time
 import scipy.sparse as sp
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -18,7 +18,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
-from r2common import (build_cache, load, macro, valid_cols, COHORTS, RICH, MODEL, OUT, AUDIT,
+from r2common import (build_cache, load, macro, valid_cols, COHORTS, MODEL, OUT, AUDIT,
                       BACKBONE, EXPR_COLS, SPA_R30, SPA_K10, L2_L1)
 
 MODELZOO_TRAIN = 150_000       # shared train subsample so RF/MLP stay tractable + fair

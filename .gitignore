@@ -4,3 +4,6 @@
 .claude/
 old doc/
 reports/
+report_2ndstage/
+__pycache__/
+*.pyc

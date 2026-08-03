@@ -1,5 +1,20 @@
 # RECAP — What we have done so far (past runs, decisions, results)
 
+> ## ⚠️ Read this first — parts of this report are out of date (2026-08-03)
+>
+> The ferguson dataset was replaced. The old export had only 3 coarse labels and they were
+> **wrong** (it called a squamous-carcinoma TMA 54% immune and 14% tumour). The new export has
+> 9 real cell types, so ferguson is now a full L2 cohort with real cell areas.
+>
+> | Section | Status |
+> |---|---|
+> | Section 2 cohort table, "ferguson is the odd one out" | **fixed below** |
+> | Section 5, Step 8 backbone LOCO results | **superseded** — see `harmonised/model/step8_loco_results.csv` (re-run 2026-08-03) |
+> | Step 9 blocks, Step 10a/10b/10c, Step 8b tables | **stale** — those steps have NOT been re-run against the new ferguson. Do not quote them. |
+>
+> Everything about steps 1–7 method, CRC/HubMap/Keren/UPMC, and the marker panel is unchanged
+> and still correct.
+
 For the deep detail behind any step, see the matching `harmonised/_audit/report/stepN_report.md`.*
 ```markdown
 RAW DATA (5 cohorts)
@@ -80,11 +95,11 @@ We want to **name the type of every cell** (T cell, tumour cell, fibroblast, etc
 | HubMap | CODEX | healthy intestine | 2,603,217 | 47 | full (9 types) |
 | Keren | MIBI-TOF | breast cancer (TNBC) | 197,678 | 36 | full (8 types) |
 | UPMC | IMC | head & neck cancer | 2,061,102 | 39 | full (7 types) |
-| ferguson | IMC | skin (cutaneous) | 155,913 | 33 | **coarse only** (tumour vs not) |
+| ferguson | IMC | head & neck skin cancer (cSCC) | 155,913 | 33 | full (6 types) |
 | **total** | | | **5,276,295** | | |
 
 - **CODEX / MIBI-TOF / IMC** are three different imaging machines. They measure the same kind of thing (protein per cell) but in different ways, so their numbers are not directly comparable — a big reason cross-cohort is hard.
-- **ferguson is the odd one out**: it has the fewest markers *and* only coarse labels (its cells are only marked "tumour" or "not", no fine immune/stromal detail). It is also **spatially sparse** — its cells sit far apart.
+- **ferguson is still the odd one out**, but only on the panel now: it has the fewest markers (33) and is **spatially sparse** — its cells sit far apart, so a 30 µm circle catches ~11 neighbours instead of 20–33. Since the 2026-08 re-export its labels are no longer coarse: 9 native types collapsing to 6 L2 groups (Epithelial/Tumour 101,458 · T cell 20,287 · Endothelial 14,159 · Granulocyte 7,993 · Myeloid 7,694 · B/Plasma 4,322).
 
 
 

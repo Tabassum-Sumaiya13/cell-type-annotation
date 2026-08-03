@@ -2,6 +2,21 @@
 
 Plain instructions for rebuilding everything from the raw datasets to the final result tables.
 
+> **Current state (2026-08-03).** The ferguson dataset was replaced, so steps 1–8 were re-run and
+> their outputs are current. **Steps 9, 10a, 10b, 10c and 8b were NOT re-run** — their CSVs in
+> `harmonised/model/` are still from the old ferguson and must not be quoted. Run them next:
+>
+> ```powershell
+> cd "d:\Desktop\FYDP\FYDP final works\cell type annotation\pipeline"
+> python step9_diagnostics.py
+> python step10a_validation.py
+> python step10b_graph_models.py
+> python step10c_k10_nbmean.py
+> ```
+>
+> ferguson now has 6 L2 classes, so Step 10a will produce a real within-cohort row for it
+> instead of skipping it.
+
 ---
 
 ## 0. Before you start

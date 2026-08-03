@@ -10,7 +10,7 @@ For each LOCO fold (train 4 cohorts, test held-out):
 Outputs: harmonised/model/step9_{blocks,perclass,confusion}.csv + _audit/step9_report.md
 Reuses step8_model.features / feature columns.
 """
-import numpy as np, pandas as pd, os, json
+import numpy as np, pandas as pd, os
 from sklearn.metrics import f1_score, confusion_matrix
 import step8_model as s8
 from step8_model import features, EXPR_COLS, SPA_COLS, L2_L1, PER_COHORT_TRAIN, fit_eval

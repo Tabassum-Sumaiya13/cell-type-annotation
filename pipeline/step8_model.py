@@ -10,7 +10,8 @@ Design:
     cross-cohort ground. (Full union + marker-dropout + hierarchical-loss MLP = Stage 2.)
   - Target: L2 (9 classes) on gold & clean cells with a resolved L2.
   - Evaluation: macro-F1 at L2, and L1 descendant-tolerant macro-F1 (map predicted L2 -> its
-    L1 parent) so ferguson (L1-only labels) is scored at its own granularity.
+    L1 parent) so a cohort whose labels do not resolve to L2 is still scored at its own
+    granularity. (Since the 2026-08 ferguson re-export all 5 cohorts resolve to L2.)
   - LOCO: train on 4 cohorts, test on the held-out 5th.
   - Ablation: EXPR-only vs EXPR+SPATIAL. Control: permute the spatial block within the test
     cohort (breaks cell<->neighbourhood correspondence) - a first-pass proxy for the full
@@ -140,7 +141,7 @@ def main():
     R.to_csv(os.path.join(MODEL, "step8_loco_results.csv"), index=False)
     rep = ["# STEP 8 - Cross-cohort model + spatial ablation (Stage 1)\n",
            "HistGradientBoosting on the 19-marker backbone. LOCO = train 4 cohorts, test the 5th.",
-           "L1 = 3-class descendant-tolerant (ferguson scorable here). L2 = 9-class.",
+           "L1 = 3-class descendant-tolerant. L2 = 9-class (all 5 cohorts scorable).",
            f"Backbone: {', '.join(BACKBONE)}\n",
            R.to_markdown(index=False),
            f"\n**Mean L1 macro-F1: expr {R['expr_F1_L1'].mean():.3f} -> +spatial "

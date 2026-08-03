@@ -13,7 +13,7 @@ Outputs:
   harmonised/_audit/step4_report.md
 """
 import numpy as np, pandas as pd, os
-from common import COHORTS, DATASETS, OUT, AUDIT, load_geometry
+from common import COHORTS, DATASETS, OUT, AUDIT, FERGUSON_CSV, load_geometry
 
 # ---------------------------------------------------------------- target catalogue
 # key -> (CL id, CL name, L1, L2)   L2=None means "coarse, not scorable at the 9-class level"
@@ -41,11 +41,11 @@ T = {
  'SMC':('CL:0000192','smooth muscle cell','Stromal','Fibroblast/Muscle'),
  'Mesen':('CL:0000134','mesenchymal cell','Stromal','Fibroblast/Muscle'),
  'StromaFib':('CL:0000499','stromal cell','Stromal','Fibroblast/Muscle'),
- 'StromaGen':('CL:0000499','stromal cell','Stromal',None),
  'ICC':('CL:0002088','interstitial cell of Cajal','Stromal','Other'),
  'Nerve':('CL:0000540','neuron','Stromal','Other'),
  'Adip':('CL:0000136','adipocyte','Stromal','Other'),
  'Tumor':('CL:0001063','neoplastic cell','Epithelial/Tumour','Epithelial/Tumour'),
+ 'Epith':('CL:0000066','epithelial cell','Epithelial/Tumour','Epithelial/Tumour'),
  'Entero':('CL:0000584','enterocyte','Epithelial/Tumour','Epithelial/Tumour'),
  'Goblet':('CL:0000160','goblet cell','Epithelial/Tumour','Epithelial/Tumour'),
  'Paneth':('CL:0000510','paneth cell','Epithelial/Tumour','Epithelial/Tumour'),
@@ -100,8 +100,19 @@ NAT = {
   'Tumor (CD21+)':('Tumor','CD21+',1,0),'Tumor (Ki67+)':('Tumor','Ki67+',1,0),
   'Tumor (Podo+)':('Tumor','Podo+',1,0),'Vessel':('Endo',None,1,0),
  },
+ # 2026-08 re-export: FuseSOM clusters 1-10 collapsed to 9 named types (cluster_3 + cluster_5
+ # are both SC). Codes are from Ferguson 2022 (HNcSCC IMC). Each one was re-checked against its
+ # own marker profile in this data before mapping - the top z-scored marker is in the comment.
  'ferguson': {
-  'immune':('ImmOther',None,1,0),'stromal':('StromaGen',None,1,0),'tumour':('Tumor',None,1,0),
+  'TC_CD4':('CD4T',None,1,0),      # CD3+ CD4+
+  'TC_CD8':('CD8T',None,1,0),      # CD3+ CD8a+
+  'BC':('B',None,1,0),             # CD20+
+  'MC':('Mac',None,1,0),           # CD68+ (paper calls them macrophages)
+  'DC':('DC',None,1,0),            # HLADR-high
+  'GC':('Gran',None,1,0),          # CD66a+ granulocyte
+  'EC':('Endo',None,1,0),          # CD13+ / CD31+ vasculature
+  'SC':('Tumor',None,1,0),         # squamous carcinoma cells - highest panCK of any type
+  'EP':('Epith',None,1,0),         # podoplanin-high epithelial, 2nd-highest panCK
  },
 }
 
@@ -122,7 +133,8 @@ TREE = [
  ('endothelial cell','Endothelial'),('endothelial cell of lymphatic vessel','Endothelial'),
  ('fibroblast','Fibroblast/Muscle'),('smooth muscle cell','Fibroblast/Muscle'),('mesenchymal cell','Fibroblast/Muscle'),
  ('interstitial cell of Cajal','Other'),('neuron','Other'),('adipocyte','Other'),
- ('neoplastic cell','Epithelial/Tumour'),('enterocyte','Epithelial/Tumour'),('goblet cell','Epithelial/Tumour'),
+ ('neoplastic cell','Epithelial/Tumour'),('epithelial cell','Epithelial/Tumour'),
+ ('enterocyte','Epithelial/Tumour'),('goblet cell','Epithelial/Tumour'),
  ('paneth cell','Epithelial/Tumour'),('enteroendocrine cell','Epithelial/Tumour'),('transit amplifying cell','Epithelial/Tumour'),
 ]
 
@@ -159,8 +171,8 @@ def native_and_conf(cohort):
                       usecols=['CLUSTER_LABEL','kNN.prob'])
         return s.CLUSTER_LABEL.values, s['kNN.prob'].values, None
     if cohort=='ferguson':
-        s=pd.read_csv(os.path.join(D,'ferguson','cell_locations.csv'),usecols=['cluster_label'])
-        return s.cluster_label.values, np.ones(len(s)), None
+        s=pd.read_csv(FERGUSON_CSV,usecols=['cellType'])
+        return s.cellType.values, np.ones(len(s)), None
 
 GOLD_CONF = {'UPMC':0.7}
 HUBMAP_GOLD_DONORS = {'B004','B005','B006'}
