@@ -1,0 +1,10 @@
+a,b,reason
+CEACAM1,CEACAM5_6,CD66a (CEACAM1) and CD66 (CEACAM5/6) are different antigens - the names look almost identical so this pair is the easiest mistake to make
+PTPRC,PTPRC_RA,pan-CD45 and the CD45RA isoform antibody mean different things even though the gene is the same
+PTPRC,PTPRC_RO,pan-CD45 and the CD45RO isoform antibody mean different things even though the gene is the same
+PTPRC_RA,PTPRC_RO,naive (RA) and memory (RO) isoforms mark opposite cell states
+H3_K9ac,H3_K27me3,active and repressive histone marks on the same histone
+KRT_PAN,KRT17,pan-keratin is a mixture - KRT17 is one specific keratin
+KRT_PAN,KRT6A,pan-keratin is a mixture - KRT6A is one specific keratin
+KRT_PAN,KRT7,pan-keratin is a mixture - KRT7 is one specific keratin
+RPS6_p,STAT3_p,different signalling proteins - both are phospho antibodies

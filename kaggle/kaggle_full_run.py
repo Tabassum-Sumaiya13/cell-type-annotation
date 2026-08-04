@@ -40,8 +40,9 @@ UNION = lay["union_markers"]; PER_COHORT = lay["per_cohort_markers"]
 try:
     BACKBONE = json.load(open(os.path.join(INPUT_DIR, "panel.json")))["backbone"]
 except Exception:
-    BACKBONE = ['CD11c','CD16','CD20','CD3','CD31','CD4','CD45','CD45RO','CD68','CD8',
-                'FoxP3','HLA-DR','Ki67','PD1','PDL1','PanCK','Podoplanin','Vimentin','aSMA']
+    # fallback only - gene-symbol names, must match panel.json (Step 1, 2026-08-04 naming)
+    BACKBONE = ['ACTA2','CD274','CD3E','CD4','CD68','CD8A','FCGR3A','FOXP3','HLA-DRA','ITGAX',
+                'KRT_PAN','MKI67','MS4A1','PDCD1','PDPN','PECAM1','PTPRC','PTPRC_RO','VIM']
 MARK = UNION if PANEL_SET == "union" else BACKBONE
 os.makedirs(OUT_DIR, exist_ok=True)
 

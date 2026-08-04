@@ -131,7 +131,7 @@ All output goes under `harmonised/`. `_audit/` holds the human-readable reports.
 
 | Step | Files it creates | Quick check |
 |---|---|---|
-| 1 | `_audit/marker_map.csv`, `panel_matrix.csv`, **`panel.json`**, `step1_report.md` | `panel.json` has 102 union + 19 backbone markers |
+| 1 | `_audit/marker_map.csv`, `panel_matrix.csv`, **`panel.json`**, `step1_report.md` | `panel.json` has 101 union + 19 backbone markers |
 | 2 | `{cohort}_expr.parquet` × 5, `_audit/step2_{cohort}_marker_audit.csv` | 5 expr files exist |
 | 3 | `{cohort}_cells.parquet` × 5, `_audit/step3_geometry_report.md` | report shows a "clean %" per cohort |
 | 4 | `{cohort}_labels.parquet` × 5, `_audit/cl_mapping.csv`, `ontology_tree.csv` | report shows gold counts |
