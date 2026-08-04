@@ -140,7 +140,7 @@ def lab(k):
 
 
 # ----------------------------------------------------------------------------
-# 5. Report
+# 5. Report--- part need to be removed when the pipeline is run in a non-interactive environment
 # ----------------------------------------------------------------------------
 L = []
 w = L.append
