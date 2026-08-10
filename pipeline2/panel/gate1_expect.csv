@@ -1,0 +1,41 @@
+cohort,native_label,triple,marker,reason,note
+CRC,tumor cells,FAMILY:KRT_PAN|pan|none,panCK,epithelial tumour must be keratin high,"sibling classes share this marker (other tumour/epithelial classes sit in the negative set), so vs-all-others AUROC is diluted"
+CRC,CD8+ T cells,HGNC:1706|pan|none,CD8A,the label names the marker,
+CRC,CD4+ T cells CD45RO+,HGNC:1678|pan|none,CD4,the label names the marker; CRC's plain CD4 T cell class is only 0.9% so the memory class is used,"CD4 is also carried by monocytes and macrophages, so vs-all-others AUROC understates T-cell identity; CD3 separates these labels at 0.80-0.92"
+CRC,B cells,HGNC:7315|pan|none,CD20,B cells are CD20 positive,
+CRC,CD68+CD163+ macrophages,HGNC:1693|pan|none,CD68,the label names the marker,
+CRC,vasculature,HGNC:8823|pan|none,CD31,endothelium is CD31 positive,
+CRC,Tregs,HGNC:6106|pan|none,FOXP3,regulatory T cells are defined by FOXP3,
+UPMC,Tumor,FAMILY:KRT_PAN|pan|none,panCK,epithelial tumour must be keratin high,"sibling classes share this marker (other tumour/epithelial classes sit in the negative set), so vs-all-others AUROC is diluted"
+UPMC,CD8 T cell,HGNC:1706|pan|none,CD8A,the label names the marker,
+UPMC,CD4 T cell,HGNC:1678|pan|none,CD4,the label names the marker,"CD4 is also carried by monocytes and macrophages, so vs-all-others AUROC understates T-cell identity; CD3 separates these labels at 0.80-0.92"
+UPMC,B cell,HGNC:7315|pan|none,CD20,B cells are CD20 positive,
+UPMC,Macrophage,HGNC:1693|pan|none,CD68,macrophages are CD68 positive,
+UPMC,Vessel,HGNC:8823|pan|none,CD31,endothelium is CD31 positive,
+Keren,Keratin_positive_tumor,FAMILY:KRT_PAN|pan|none,panCK,the label names the marker,
+Keren,CD8_T,HGNC:1706|pan|none,CD8A,the label names the marker,
+Keren,CD4_T,HGNC:1678|pan|none,CD4,the label names the marker,"CD4 is also carried by monocytes and macrophages, so vs-all-others AUROC understates T-cell identity; CD3 separates these labels at 0.80-0.92"
+Keren,B,HGNC:7315|pan|none,CD20,B cells are CD20 positive,
+Keren,Macrophages,HGNC:1693|pan|none,CD68,macrophages are CD68 positive,
+Keren,Endothelial,HGNC:8823|pan|none,CD31,endothelium is CD31 positive,
+Keren,Tregs,HGNC:6106|pan|none,FOXP3,regulatory T cells are defined by FOXP3,
+Phillips,tumor cells,COMPLEX:CD3|pan|none,CD3,"CTCL: the malignant cells are T lymphocytes, not keratinocytes",CORRECTED - the original keratin assertion was a domain error; measured CD3 0.815 vs keratin 0.432
+Phillips,CD8+ T cells,HGNC:1706|pan|none,CD8A,the label names the marker,
+Phillips,CD4+ T cells,HGNC:1678|pan|none,CD4,the label names the marker,"CD4 is also carried by monocytes and macrophages, so vs-all-others AUROC understates T-cell identity; CD3 separates these labels at 0.80-0.92"
+Phillips,B cells,HGNC:7315|pan|none,CD20,B cells are CD20 positive,
+Phillips,macrophages (M1>M2),HGNC:1693|pan|none,CD68,macrophages are CD68 positive,
+Phillips,vasculature,HGNC:8823|pan|none,CD31,endothelium is CD31 positive,
+Phillips,Tregs,HGNC:6106|pan|none,FOXP3,regulatory T cells are defined by FOXP3,
+Sorin,Cancer,FAMILY:KRT_PAN|pan|none,panCK,lung adenocarcinoma is keratin positive,
+Sorin,Tc,HGNC:1706|pan|none,CD8A,Tc is the cytotoxic T cell class,
+Sorin,Th,HGNC:1678|pan|none,CD4,Th is the helper T cell class,"CD4 is also carried by monocytes and macrophages, so vs-all-others AUROC understates T-cell identity; CD3 separates these labels at 0.80-0.92"
+Sorin,B cell,HGNC:7315|pan|none,CD20,B cells are CD20 positive,
+Sorin,Cl MAC,HGNC:1693|pan|none,CD68,classical macrophages are CD68 positive,
+Sorin,Endothelial cell,HGNC:8823|pan|none,CD31,endothelium is CD31 positive,
+Sorin,Treg,HGNC:6106|pan|none,FOXP3,regulatory T cells are defined by FOXP3,
+ferguson,SC,FAMILY:KRT_PAN|pan|none,panCK,SC is the squamous carcinoma cell class,"sibling classes share this marker (other tumour/epithelial classes sit in the negative set), so vs-all-others AUROC is diluted"
+ferguson,TC_CD8,HGNC:1706|pan|none,CD8A,the label names the marker,
+ferguson,TC_CD4,HGNC:1678|pan|none,CD4,the label names the marker,"CD4 is also carried by monocytes and macrophages, so vs-all-others AUROC understates T-cell identity; CD3 separates these labels at 0.80-0.92"
+ferguson,BC,HGNC:7315|pan|none,CD20,BC is the B cell class,
+ferguson,MC,HGNC:1693|pan|none,CD68,MC is the macrophage class,
+ferguson,EC,HGNC:8823|pan|none,CD31,EC is the endothelial cell class,"KNOWN DATA DEFECT: ferguson CD31 does not mark its own EC label (AUROC 0.500). Its endothelium is marked by CD13 instead (0.83). ferguson is the frozen holdout, so this is recorded BEFORE the final test."

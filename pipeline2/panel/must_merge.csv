@@ -1,0 +1,6 @@
+group,members,reason
+KRT_PAN,Cytokeratin - epithelia:Cyc_10_ch_2|Cytokeratin|Pan-Keratin|Pancytokeratin|PanCK|panCK,six spellings of pan-cytokeratin across six cohorts - the single hardest merge in the panel
+CTNNB1,beta-catenin - Wnt signaling:Cyc_4_ch_4|Beta catenin|B-catenin,three spellings of beta-catenin; HGNC returns nothing for any of them so UniProt must carry it
+PTPRC,CD45 - hematopoietic cells:Cyc_4_ch_2|CD45,CRC decorates its column names with a description and cycle/channel suffix
+CD8A,CD8 - cytotoxic T cells:Cyc_3_ch_2|CD8|CD8a,CD8 vs CD8a is the plainest cross-cohort alias and must not be missed
+HLA-DR,HLA-DR - MHC-II:Cyc_5_ch_2|HLA-DR|HLA_DR|HLADR,a complex - HGNC returns zero hits so the complex table must catch it

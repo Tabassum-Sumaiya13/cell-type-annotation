@@ -1,11 +1,12 @@
 /Datasets/
 /papers
-/harmonised/
+
 .claude/
-old doc/
-reports/
-report_2ndstage/
+dataset_reports/
+work/
+
 __pycache__/
 *.pyc
-old report 2/
-archive_july_runs/
+
+discard_old_pipeline_nd_result/
+_validation/
