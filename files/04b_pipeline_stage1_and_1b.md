@@ -63,6 +63,9 @@ Known weaknesses.
 Value tables carry only the 9 core markers. Stage 2 must rebuild wide.
 slidestats files exist but FiLM lost, so they are now unused by the accepted path.
 4.5 Stage 1b — Automatic label alignment ✅ GATE 1b: PASS
+⚠️ TWO LATER MEASUREMENTS QUALIFY THIS PASS (2026-08-11). The gate still passes on its own 7 checks - nothing below is withdrawn - but two things about the 25-cluster output were measured afterwards and both must travel with it.
+1. **The label space is not blind to the frozen holdout.** All 6 cohorts were clustered together, so ferguson's 9 labels helped build the space Stage 7 will be scored in. The H10 control (pipeline2/s1b_control.py) FAILS its declared thresholds - cell-weighted ARI 0.5447 against a 0.90 bar. The mechanism is narrow: the signatures are provably untouched (SIM/EV bit-identical) and at a matched cut the ARI is 0.9828, so what ferguson changed is the GRANULARITY the guards allow - 25 clusters instead of the 37 the 5 training cohorts choose alone. Coarser is easier, so the bias direction is known and it favours the result. See D-46, H10, reports/s1b_control_ferguson.md.
+2. **The granularity was picked off a curve too flat to carry the decision** - see the note under 'Granularity selection' below, and D-47 / H11.
 This is the stage that earns the right to drop the ontology. It is the project's central experiment.
 
 Purpose. Map 106 native labels from 6 cohorts into a shared label space with no ontology, no dictionary, and no text.
@@ -193,6 +196,8 @@ df['usable'] = ((df.biggest_share <= MAX_CLUSTER_SHARE) &
                 (df.cross_cohort_share >= MIN_CROSS_SHARE) &
                 (df.cohort_ari <= COHORT_ARI_MAX))
 tau = float(ok.cut[ok.stability.idxmax()])     # max stability INSIDE the usable window
+
+⚠️ MEASURED DEFECT IN THIS LINE (D-47, found by the H10 control 2026-08-11, NOT repaired). The guards do real work; `stability.idxmax()` does not. Across the 5-cohort feasible window the whole range of the stability curve is 0.062, and the top two candidates - tau=0.650 at 0.8240 and tau=0.800 at 0.8205 - are 0.0035 apart. Choosing between 37 clusters and 22 clusters on 0.0035 of ARI is sampling a granularity, not selecting one. `choose_cut`'s own docstring already says stability has 'no directional bias, only low resolution'; the control measures how low. Not repaired, because repairing it changes the shipped label space and every number since this gate. What it changes is the WRITE-UP: the 25 clusters are ONE DEFENSIBLE CHOICE INSIDE A FEASIBLE WINDOW (6-cohort window 0.750-0.800), not the granularity the data selected. If the cut is ever re-chosen, report the whole usable window and show the headline is stable across it.
 Other functions: cohort_driven(nodes, memb) (unweighted ARI vs cohort + cell-weighted cross-cohort share), shared_markers(S, idx), ari(a, b, w=None), best_match_agreement (Hungarian assignment via scipy.optimize.linear_sum_assignment), score_hand(..., level='target'), coherence, rare_check, cluster_table, md_table, agree_at, cohort_driven_note.
 
 4.5.3 Declared hard cases — pipeline2/panel/gate1b_expect.csv
