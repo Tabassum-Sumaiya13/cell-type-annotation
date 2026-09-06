@@ -118,7 +118,14 @@ SPECS = {
 
 'ferguson': dict(
     tech='IMC', tissue='skin', disease='cutaneous squamous cell carcinoma',
-    role='holdout',                                    # frozen: final zero-shot test only
+    # WAS role='holdout' - the frozen test-only cohort, 'one final number, once'.
+    # Retired 2026-09-06: the protocol is now 7-fold leave-one-cohort-out with NO frozen
+    # holdout, so ferguson is trained on in the six folds where it is not held out. This
+    # dissolves H10 (the label space could not be blind to a holdout that no longer
+    # exists) and makes the roster comparable to DeepCell Types' leave-one-dataset-out.
+    # COST, stated in files/02: no cohort is now untouched by design decisions, and the
+    # old zero-shot 0.3309 must be relabelled as an old-protocol number.
+    role='train',
     px_um=1.0,
     px_um_source='hardware fact - IMC laser ablation spot size is 1 um by construction',
     arrival='raw',

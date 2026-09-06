@@ -8,3 +8,5 @@ H3K9ac,H3K27me3,active and repressive histone marks on the same histone
 phospho-S6,pSTAT3,different signalling proteins - both are phospho antibodies
 B7H3,H3K9ac,B7H3 is CD276 and merely contains the letters H3 - it must not be read as a histone mark
 CD66a,CD16,CD66a is CEACAM1; look-alike CD numbers must not collapse onto each other
+panCK,CK5,pan-cytokeratin is an antibody cocktail - KRT5 is one specific keratin
+panCK,CK8-18,pan-cytokeratin is an antibody cocktail - CK8-18 is a two-keratin reagent

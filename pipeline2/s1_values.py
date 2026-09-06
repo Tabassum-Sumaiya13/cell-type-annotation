@@ -51,6 +51,7 @@ import matplotlib.pyplot as plt
 import torch
 
 import config
+import panel_util
 from config import (SPECS, WORK, VALUES, PANEL, REPORTS, FIGURES,
                     raw_table, value_table, SEED)
 from nn.marker_encoder import MaskedMarkerProbe, EPS_FILM
@@ -100,9 +101,10 @@ def core_triples(cohorts):
 
 
 def raw_cols_for(cohort, triples):
-    r = registry()
-    r = r[r.cohort == cohort].drop_duplicates('triple').set_index('triple')
-    return [r.raw_column[t] for t in triples]
+    """{triple: [raw_column, ...]}. A list longer than one is a DUPLICATE REAGENT - Danenberg
+    ships two HER2 clones that resolve to the same gene. Averaged, by the policy declared in
+    panel/gate0b_expect.csv. See panel_util for why averaging and not 'keep the first'."""
+    return panel_util.cols_for(registry(), cohort, triples)
 
 
 # ----------------------------------------------------------------------------- build
@@ -115,9 +117,9 @@ def build(cohort, triples, n_sub=N_SUB, rng=None):
     """
     rng = rng or np.random.default_rng(SEED)
     cols = raw_cols_for(cohort, triples)
-    df = pd.read_parquet(raw_table(cohort), columns=META + cols)
-    X = df[cols].astype('float32')
-    X.columns = triples
+    df = pd.read_parquet(raw_table(cohort),
+                         columns=META + panel_util.read_cols(cols, triples))
+    X = panel_util.matrix(df, cols, triples)
     img = df.image_id.to_numpy()
 
     # `method='average'` splits ties down the middle. That matters here: Sorin arrives uint8,

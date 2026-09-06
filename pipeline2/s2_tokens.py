@@ -47,6 +47,7 @@ import torch
 import torch.nn.functional as F
 
 import config
+import panel_util
 from config import (SPECS, WORK, VALUES, PANEL, REPORTS, FIGURES,
                     raw_table, value_table, SEED)
 from nn.tokens import TokenModel
@@ -205,12 +206,10 @@ def build(cohort, triples_c):
     `method='average'` (mid-rank) again splits ties down the middle. Sorin arrives uint8, so ties
     are everywhere and a left- or right-rank would bias every quantised marker.
     """
-    rr = registry()
-    rr = rr[rr.cohort == cohort].drop_duplicates('triple').set_index('triple')
-    cols = [rr.raw_column[t] for t in triples_c]
-    df = pd.read_parquet(raw_table(cohort), columns=META + cols)
-    X = df[cols].astype('float32')
-    X.columns = triples_c
+    cols = panel_util.cols_for(registry(), cohort, triples_c)
+    df = pd.read_parquet(raw_table(cohort),
+                         columns=META + panel_util.read_cols(cols, triples_c))
+    X = panel_util.matrix(df, cols, triples_c)
     n = len(X)
 
     # --- dynamic range, measured on RAW values over EVERY cell of the cohort.

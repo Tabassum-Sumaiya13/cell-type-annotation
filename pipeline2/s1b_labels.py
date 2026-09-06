@@ -74,6 +74,7 @@ from scipy.spatial.distance import squareform
 from scipy.optimize import linear_sum_assignment
 
 import config
+import panel_util
 from config import SPECS, WORK, PANEL, REPORTS, FIGURES, raw_table, SEED
 
 # ------------------------------------------------------------------ declared constants
@@ -115,7 +116,7 @@ def cohort_markers(cohorts):
     r = r[(r.kind != 'non_protein') & r.cohort.isin(cohorts)]
     out = {}
     for c, g in r.groupby('cohort'):
-        out[c] = g.drop_duplicates('triple').set_index('triple').raw_column.to_dict()
+        out[c] = panel_util.cols_for(r, c, sorted(g.triple.unique()))
     gene = r.drop_duplicates('triple').set_index('triple').gene.to_dict()
     return out, gene
 
@@ -139,10 +140,10 @@ def build_signatures(cohorts):
         t0 = time.time()
         cols = cmark[c]
         use = sorted(cols)
-        df = pd.read_parquet(raw_table(c), columns=['native_label'] + [cols[t] for t in use])
+        df = pd.read_parquet(raw_table(c),
+                             columns=['native_label'] + panel_util.read_cols(cols, use))
         lab = df.native_label.astype(str).str.strip()
-        U = df[[cols[t] for t in use]].astype('float32')
-        U.columns = use
+        U = panel_util.matrix(df, cols, use)
         # identical transform to the Gate 1 winner V3: mid-rank ECDF inside (cohort, marker)
         U = U.rank(pct=True, method='average').astype('float32')
         n_tot = len(U)
@@ -549,7 +550,41 @@ def choose_cut(S, SIM, EV, k=K_EVID):
     df['usable'] = ((df.biggest_share <= MAX_CLUSTER_SHARE) &
                     (df.cross_cohort_share >= MIN_CROSS_SHARE) &
                     (df.cohort_ari <= COHORT_ARI_MAX))
+
+    # --- SEED GUARDS (--seed-refine). Which guards may judge the GLOBAL CUT, and which may
+    # only judge the FINAL label space.
+    #
+    # The 7-cohort run failed with NO usable cut: cross_cohort_share needs cut >= 0.850 and
+    # biggest_share needs cut <= 0.700, and the two windows are disjoint. The cause is that
+    # cohorts annotate at different depths - Danenberg splits epithelium into 11 labels where
+    # every other cohort has one or two - so one global number cannot serve every branch.
+    #
+    # That is not news to this file. refine()'s own docstring says the global cut "lands at the
+    # coarsest granularity that keeps the label space usable. That is right for the top level
+    # and too coarse inside a branch ... no single global cut can separate the first pair
+    # without shattering everything else."
+    #
+    # THE DEFECT IS WHERE THE GUARD IS APPLIED, NOT WHAT IT SAYS. biggest_share is a property of
+    # the FINAL label space, and refine() runs AFTER the cut. Testing it on the seed tests an
+    # object that is deliberately too coarse and that nothing downstream ever uses.
+    #
+    # The other two guards genuinely belong on the seed, because refine() PRESERVES them by
+    # construction: a split is kept only if "both sides span at least 2 cohorts", so refining can
+    # never manufacture a single-cohort cluster and can only raise cross_cohort_share. cohort_ari
+    # is protected by the same condition.
+    #
+    # So: seed on the guards refine() preserves, and judge size AFTER refinement.
+    # Declared and dated rather than silently swapped, in the same style as D-28/D-29/D-35.
+    # Opt-in, so a run WITHOUT --seed-refine reproduces the shipped 25-cluster result exactly.
+    df['seed_ok'] = ((df.cross_cohort_share >= MIN_CROSS_SHARE) &
+                     (df.cohort_ari <= COHORT_ARI_MAX))
     return df
+
+
+def post_refine_share(memb):
+    """biggest_share measured on the FINAL membership - the object the guard is really about."""
+    vc = pd.Series(memb).value_counts()
+    return float(vc.max() / len(memb)), int(vc.max())
 
 
 def cohort_driven_note():
@@ -802,7 +837,18 @@ def best_match_agreement(auto, hand, w):
 
 
 def read_expect():
-    p = os.path.join(PANEL, 'gate1b_expect.csv')
+    """The declared cases, read from panel/gate1b_expect.csv unless --expect names another file.
+
+    The 7-cohort rebuild adds five cases that cannot exist in the v1 file - four of them name
+    Danenberg labels - so it runs against panel/gate1b_v2_expect.csv. The v1 file is left
+    untouched so the shipped 25-cluster result stays reproducible and the two gates can be read
+    side by side rather than one silently replacing the other.
+    """
+    name = 'gate1b_expect.csv'
+    if '--expect' in sys.argv:
+        name = sys.argv[sys.argv.index('--expect') + 1]
+    p = os.path.join(PANEL, name)
+    print(f"gate cases: {name}")
     df = pd.read_csv(p, keep_default_na=False)
     df['pairs'] = df.members.apply(
         lambda s: [tuple(x.split('|', 1)) for x in s.split(';')])
@@ -835,6 +881,37 @@ def md_table(df, floatfmt='{:.3f}'):
 
 
 # ============================================================== main
+def stale_reason(S, cohorts):
+    """Why the cached signatures cannot be reused for THIS run. None means they can.
+
+    THE CACHE HAD NO GUARD, AND IT SILENTLY DECIDED WHAT A RUN MEANT. On 2026-09-06 the
+    7-cohort rebuild loaded work/s1b_signatures.npz from the previous 5+1-cohort pipeline,
+    reported "signatures loaded from cache: 106 labels", clustered those, and printed
+    GATE 1b: PASS. Danenberg's 32 phenotypes were never in it and neither were the corrected
+    marker ids, so the gate re-scored the OLD signatures against NEW declared cases and passed.
+
+    That is D-39's failure family exactly: what the code does depended on which files were on
+    disk rather than on the data, with nothing in the log to signal it. `--resign` existed but
+    an operator had to know to type it, and forgetting produced a plausible-looking PASS.
+
+    Two fingerprints are compared, both already stored in the npz:
+      cohort set   - a cohort added or removed changes the label space
+      triple set   - a marker id repaired changes every signature that uses it
+    """
+    cached_c = set(map(str, S['cohort']))
+    if cached_c != set(cohorts):
+        miss, extra = sorted(set(cohorts) - cached_c), sorted(cached_c - set(cohorts))
+        return (f"cohort set differs - missing {miss}" if miss else '') +                (f" unexpected {extra}" if extra else '')
+    cmark, _ = cohort_markers(cohorts)
+    now_t = {t for m in cmark.values() for t in m}
+    cached_t = set(map(str, S['triples']))
+    if cached_t != now_t:
+        add, gone = sorted(now_t - cached_t), sorted(cached_t - now_t)
+        return (f"marker vocabulary differs - {len(add)} added, {len(gone)} removed "
+                f"(e.g. {(add or gone)[:2]})")
+    return None
+
+
 def main(argv):
     only = set(a for a in argv if a.startswith('--'))
     cohorts = built()
@@ -845,7 +922,13 @@ def main(argv):
         S = build_signatures(cohorts)
     else:
         S = load_signatures()
-        print(f'signatures loaded from cache: {len(S["nodes"])} labels')
+        why = stale_reason(S, cohorts)
+        if why:
+            print(f'  CACHED SIGNATURES ARE STALE: {why}')
+            print('  rebuilding rather than clustering the wrong thing (see stale_reason)')
+            S = build_signatures(cohorts)
+        else:
+            print(f'signatures loaded from cache: {len(S["nodes"])} labels')
 
     nodes = S['nodes']
     key = list(zip(nodes.cohort, nodes.label))
@@ -858,12 +941,35 @@ def main(argv):
     print(f'containment: {len(nodes)}x{len(nodes)} in {time.time()-t0:.1f}s')
 
     sweep = choose_cut(S, SIM, EV)
-    ok = sweep[sweep.usable]
+    seed_refine = '--seed-refine' in only
+    col = 'seed_ok' if seed_refine else 'usable'
+    ok = sweep[sweep[col]]
+    if seed_refine:
+        print(f'--seed-refine: seeding on the guards refine() preserves '
+              f'(cross-cohort, cohort_ari); size is judged AFTER refinement')
     if len(ok) == 0:
-        print('NO usable cut: no granularity satisfies all three guards at once. '
+        print(f'NO usable cut: no granularity satisfies the {col} guards at once. '
               'Stage 1b has failed.')
         ok = sweep
-    tau = float(ok.cut[ok.stability.idxmax()])      # most stable cut inside the feasible window
+    if seed_refine and len(ok):
+        # SEED = THE FINEST CUT THE PRESERVED GUARDS ALLOW, not the most stable one.
+        #
+        # First attempt used max stability, as the global rule does, and it ran to the coarsest
+        # cut in the grid (1.150, 135 of 138 labels in one cluster). That is the known bias:
+        # stability is flat at 0.91-0.99 across the range, so with the size guard no longer
+        # bounding the seed from above there was nothing left to stop it. Recorded rather than
+        # quietly replaced.
+        #
+        # The correct rule follows from what refine() can DO: it only ever SPLITS. So a seed that
+        # is too coarse destroys structure refine() must then rediscover - and refine() is
+        # deliberately conservative, requiring both sides to span 2 cohorts AND to reproduce
+        # leave-one-cohort-out, so it will decline to rebuild much of it. A seed that is as fine
+        # as the preserved guards allow hands refine() the most structure and asks it to do the
+        # least invention. Splitting cannot lower cross_cohort_share (both sides must span 2
+        # cohorts), so the guard still holds all the way down.
+        tau = float(ok.cut.min())
+    else:
+        tau = float(ok.cut[ok.stability.idxmax()])  # most stable cut inside the feasible window
     row = sweep[sweep.cut == tau].iloc[0]
     print(f'cut = {tau:.3f}  ({int(row.clusters)} clusters, biggest {int(row.biggest)} labels '
           f'= {row.biggest_share:.0%}, cohort_ari {row.cohort_ari:.3f}, '
@@ -872,6 +978,9 @@ def main(argv):
     memb0 = cluster(np.arange(len(nodes)), SIM, EV, tau)
     loco = loco_memberships(S, SIM, EV, tau)
     memb1, splits = refine(S, memb0, SIM, EV)
+    _share, _big = post_refine_share(memb1)
+    print(f'post-refinement size guard: biggest cluster {_big} labels = {_share:.1%} '
+          f'(cap {MAX_CLUSTER_SHARE:.0%}) -> {"PASS" if _share <= MAX_CLUSTER_SHARE else "FAIL"}')
     memb, D, gi = nesting(S, memb1, C, EV, SIM=SIM, cut=tau)
     ncoh = np.array([nodes.cohort[np.isfinite(P[:, t])].nunique() for t in range(P.shape[1])])
     names, cen, zc = name_clusters(S, memb, P, ncoh)

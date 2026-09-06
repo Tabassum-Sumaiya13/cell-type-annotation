@@ -21,3 +21,5 @@ TA,ELEMENT,,,MIBI elemental channel - tantalum slide coating
 AU,ELEMENT,,,MIBI elemental channel - gold slide substrate
 BACKGROUND,ARTEFACT,,,background / noise channel
 X140EMPTY,ARTEFACT,,,empty mass channel used as a blank
+KRT8_18,COMPLEX,CK8-18|CK818|Cytokeratin 8/18|CK8/18,KRT8|KRT18,"Danenberg Nd144. Clone C51 is a dual keratin 8 / keratin 18 antibody; markerStackOrder names the channel CK8-18 and AbPanel names the target 'Cytokeratin 8/18'. Two genes one reagent - a complex, not a guess at one of them"
+CC3_CPARP,COMPLEX,c-Caspase3|cCaspase3|c-Caspase3c-PARP|Cleaved Caspase3,CASP3|PARP1,"Danenberg Yb176. THE TWO SHIPPED PANEL FILES DISAGREE: markerStackOrder names the channel 'c-Caspase3c-PARP' (both targets) while AbPanel names it 'Cleaved Caspase3' clone C92-605. Recorded as a complex rather than resolved to one - the project rule is never guess. Danenberg-exclusive either way so nothing merges differently"
